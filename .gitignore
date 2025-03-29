@@ -1,17 +1,49 @@
-# Compiled class file
-*.class
+# System files
+.DS_Store
+Thumbs.db
 
-# Log file
+# Build and IDE files
+/build/
+.gradle/
+.idea/
+local.properties
+/.cxx/
+captures/
+*.iml
+
+# Dependencies
+/.gradle/
+/.externalNativeBuild/
 *.log
 
-# BlueJ files
+# Android Studio settings
+/.vscode/
+/out/
+*.swp
+*.swo
+
+# Generated files
+*.apk
+*.aab
+*.dex
+*.jar
+*.class
+*.so
+*.hprof
+
+# Cache and user settings
+/.settings/
+/.metadata/
+/gitignore.swp
+/.gitignore.swo
+
+# BlueJ file
 *.ctxt
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
 *.nar
 *.ear
