@@ -1,11 +1,7 @@
 package com.example.drillerapp
 
-data class QuestionModel (
-    val id: Int,
+data class QuestionModel(
     val question: String,
-    val option1: String,
-    val option2: String,
-    val option3: String,
-    val option4: String,
-    val correctAnswer: Int
+    val answers: List<String>,
+    val correctAnswers: List<String>
 )

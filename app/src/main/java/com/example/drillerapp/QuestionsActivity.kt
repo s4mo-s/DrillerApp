@@ -1,19 +1,23 @@
 package com.example.drillerapp
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
 import com.example.drillerapp.databinding.ActivityQuestionsBinding
+import org.json.JSONObject
+import androidx.core.view.isVisible
 
 class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var binding: ActivityQuestionsBinding
     private var mCurrentPosition: Int = 1
     private var mQuestionsList: ArrayList<QuestionModel>? = null
-    private var mSelectedOptionPosition: Int = 0
+    private var mSelectedAnswers: MutableList<String> = mutableListOf()
     private var mCorrectAnswers: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,113 +27,236 @@ class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
         binding = ActivityQuestionsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        mQuestionsList = Constants.getQuestions()
+        // Determine the source of the quiz data
+        val source = intent.getStringExtra("source")
+        if (source == "json") {
+            val quizJsonString = intent.getStringExtra("quizData")
+            if (quizJsonString != null) {
+                mQuestionsList = parseQuestionsFromJson(quizJsonString)
+            } else {
+                Toast.makeText(this, "No quiz data found!", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        } else if (source == "db") {
+            mQuestionsList = loadQuestionsFromDatabase()
+            if (mQuestionsList.isNullOrEmpty()) {
+                Toast.makeText(this, "No quiz data found in the database!", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
 
         setQuestion()
 
         if (binding.btnSubmit.text == "SUBMIT") {
-            binding.tvOptionOne.setOnClickListener(this)
-            binding.tvOptionTwo.setOnClickListener(this)
-            binding.tvOptionThree.setOnClickListener(this)
-            binding.tvOptionFour.setOnClickListener(this)
+            binding.tvAnswerOne.setOnClickListener(this)
+            binding.tvAnswerTwo.setOnClickListener(this)
+            binding.tvAnswerThree.setOnClickListener(this)
+            binding.tvAnswerFour.setOnClickListener(this)
+            binding.tvAnswerFive.setOnClickListener(this)
+            binding.tvAnswerSix.setOnClickListener(this)
         }
         binding.btnSubmit.setOnClickListener(this)
     }
 
-    private fun setQuestion(){
+    private fun parseQuestionsFromJson(jsonString: String): ArrayList<QuestionModel> {
+        val questionsList = ArrayList<QuestionModel>()
+        try {
+            val jsonObject = JSONObject(jsonString)
+            val questionsArray = jsonObject.getJSONArray("questions")
+
+            for (i in 0 until questionsArray.length()) {
+                val questionObject = questionsArray.getJSONObject(i)
+
+                val answersArray = questionObject.getJSONArray("answers")
+                val answers = mutableListOf<String>()
+                for (j in 0 until answersArray.length()) {
+                    answers.add(answersArray.getString(j))
+                }
+
+                val correctAnswersArray = questionObject.getJSONArray("correctAnswers")
+                val correctAnswers = mutableListOf<String>()
+                for (j in 0 until correctAnswersArray.length()) {
+                    correctAnswers.add(correctAnswersArray.getString(j))
+                }
+
+                val question = QuestionModel(
+                    question = questionObject.getString("question"),
+                    answers = answers,
+                    correctAnswers = correctAnswers
+                )
+                questionsList.add(question)
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error parsing quiz data: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+        return questionsList
+    }
+
+    private fun loadQuestionsFromDatabase(): ArrayList<QuestionModel> {
+        val questionsList = ArrayList<QuestionModel>()
+        // TODO: Implement database logic here
+        
+        return questionsList
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun setQuestion() {
         val question = mQuestionsList!![mCurrentPosition - 1]
 
-        defaultOptionsView()
+        defaultAnswersView()
 
         binding.btnSubmit.text = "SUBMIT"
         binding.progressBar.progress = mCurrentPosition
         binding.progressBar.max = mQuestionsList!!.size
-        binding.tvProgress.text = "${mCurrentPosition} / ${binding.progressBar.max}"
+        binding.tvProgress.text = "$mCurrentPosition / ${binding.progressBar.max}"
 
         binding.tvQuestion.text = question.question
-        binding.tvOptionOne.text = question.option1
-        binding.tvOptionTwo.text = question.option2
-        binding.tvOptionThree.text = question.option3
-        binding.tvOptionFour.text = question.option4
-    }
 
-    private fun defaultOptionsView(){
-        val options = ArrayList<TextView>()
-        options.add(0, binding.tvOptionOne)
-        options.add(1, binding.tvOptionTwo)
-        options.add(2, binding.tvOptionThree)
-        options.add(3, binding.tvOptionFour)
+        // Dynamically set the answers
+        val answers = listOf(
+            binding.tvAnswerOne,
+            binding.tvAnswerTwo,
+            binding.tvAnswerThree,
+            binding.tvAnswerFour,
+            binding.tvAnswerFive,
+            binding.tvAnswerSix
+        )
 
-        for (option in options) {
-            option.setTextColor("#7A8000".toColorInt())
-            option.typeface = android.graphics.Typeface.DEFAULT
-            option.background = ContextCompat.getDrawable(this, R.drawable.default_option_border)
+        // Show only the required number of answers
+        for (i in answers.indices) {
+            if (i < question.answers.size) {
+                answers[i].visibility = View.VISIBLE
+                answers[i].text = question.answers[i]
+            } else {
+                answers[i].visibility = View.GONE
+            }
         }
     }
 
-    private fun selectedOptionView(tv: TextView, selectedOptionNum: Int) {
+    private fun defaultAnswersView() {
+        val answers = listOf(
+            binding.tvAnswerOne,
+            binding.tvAnswerTwo,
+            binding.tvAnswerThree,
+            binding.tvAnswerFour,
+            binding.tvAnswerFive,
+            binding.tvAnswerSix
+        )
+
+        for (answer in answers) {
+            if (answer.isVisible) { // Only reset visible answers
+                answer.setTextColor("#7A8000".toColorInt())
+                answer.typeface = android.graphics.Typeface.DEFAULT
+                answer.background = ContextCompat.getDrawable(this, R.drawable.default_answer_border)
+            }
+        }
+    }
+
+    private fun selectedAnswerView(tv: TextView, selectedAnswer: String) {
         if (binding.btnSubmit.text != "SUBMIT") {
             return
         }
-        defaultOptionsView()
-        mSelectedOptionPosition = selectedOptionNum
 
-        tv.setTextColor("#363A00".toColorInt())
-        tv.setTypeface(tv.typeface, android.graphics.Typeface.BOLD)
-        tv.background = ContextCompat.getDrawable(this, R.drawable.selected_option_border)
+        if (mSelectedAnswers.contains(selectedAnswer)) {
+            // Deselect the answer
+            mSelectedAnswers.remove(selectedAnswer)
+            tv.setTextColor("#7A8000".toColorInt())
+            tv.typeface = android.graphics.Typeface.DEFAULT
+            tv.background = ContextCompat.getDrawable(this, R.drawable.default_answer_border)
+        } else {
+            // Select the answer
+            mSelectedAnswers.add(selectedAnswer)
+            tv.setTextColor("#363A00".toColorInt())
+            tv.setTypeface(tv.typeface, android.graphics.Typeface.BOLD)
+            tv.background = ContextCompat.getDrawable(this, R.drawable.selected_answer_border)
+        }
     }
 
     private fun answerView(answer: Int, drawableView: Int) {
-        when(answer) {
-            1 -> binding.tvOptionOne.background = ContextCompat.getDrawable(this, drawableView)
-            2 -> binding.tvOptionTwo.background = ContextCompat.getDrawable(this, drawableView)
-            3 -> binding.tvOptionThree.background = ContextCompat.getDrawable(this, drawableView)
-            4 -> binding.tvOptionFour.background = ContextCompat.getDrawable(this, drawableView)
+        when (answer) {
+            1 -> binding.tvAnswerOne.background = ContextCompat.getDrawable(this, drawableView)
+            2 -> binding.tvAnswerTwo.background = ContextCompat.getDrawable(this, drawableView)
+            3 -> binding.tvAnswerThree.background = ContextCompat.getDrawable(this, drawableView)
+            4 -> binding.tvAnswerFour.background = ContextCompat.getDrawable(this, drawableView)
+            5 -> binding.tvAnswerFive.background = ContextCompat.getDrawable(this, drawableView)
+            6 -> binding.tvAnswerSix.background = ContextCompat.getDrawable(this, drawableView)
         }
     }
 
     override fun onClick(v: View?) {
-        when(v?.id) {
-            R.id.tv_option_one -> selectedOptionView(binding.tvOptionOne, 1)
-            R.id.tv_option_two -> selectedOptionView(binding.tvOptionTwo, 2)
-            R.id.tv_option_three -> selectedOptionView(binding.tvOptionThree, 3)
-            R.id.tv_option_four -> selectedOptionView(binding.tvOptionFour, 4)
+        val question = mQuestionsList?.get(mCurrentPosition - 1)
+
+        when (v?.id) {
+            R.id.tv_answer_one -> selectedAnswerView(binding.tvAnswerOne, question?.answers?.get(0) ?: "")
+            R.id.tv_answer_two -> selectedAnswerView(binding.tvAnswerTwo, question?.answers?.get(1) ?: "")
+            R.id.tv_answer_three -> selectedAnswerView(binding.tvAnswerThree, question?.answers?.get(2) ?: "")
+            R.id.tv_answer_four -> selectedAnswerView(binding.tvAnswerFour, question?.answers?.get(3) ?: "")
+            R.id.tv_answer_five -> selectedAnswerView(binding.tvAnswerFive, question?.answers?.get(4) ?: "")
+            R.id.tv_answer_six -> selectedAnswerView(binding.tvAnswerSix, question?.answers?.get(5) ?: "")
             R.id.btn_submit -> submit()
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun submit() {
-        if(mSelectedOptionPosition == 0){
-            mCurrentPosition++
+        val question = mQuestionsList?.get(mCurrentPosition - 1)
 
-            when {
-                mCurrentPosition <= mQuestionsList!!.size -> setQuestion()
-                else -> {
-                    val intent = Intent(this, ResultActivity::class.java)
-                    intent.putExtra(Constants.CORRECT_ANSWERS, mCorrectAnswers)
-                    intent.putExtra(Constants.TOTAL_QUESTIONS, mQuestionsList!!.size)
-                    startActivity(intent)
-                    finish()
-                }
+        if (binding.btnSubmit.text == "SUBMIT") {
+            if (mSelectedAnswers.isEmpty()) {
+                // No options selected
+                Toast.makeText(this, "Please select at least one answer!", Toast.LENGTH_SHORT).show()
+                return
             }
-        }
-        else {
-            val question = mQuestionsList?.get(mCurrentPosition - 1)
-            if(question!!.correctAnswer != mSelectedOptionPosition) {
-                answerView(mSelectedOptionPosition, R.drawable.wrong_option_border)
+
+            // Ensure the question is not null
+            if (question == null) {
+                Toast.makeText(this, "Error: Question data is missing!", Toast.LENGTH_SHORT).show()
+                return
             }
-            else {
+
+            // Check if the selected answers match the correct answers
+            val isCorrect = question.correctAnswers.containsAll(mSelectedAnswers) &&
+                    mSelectedAnswers.containsAll(question.correctAnswers)
+
+            if (isCorrect) {
                 mCorrectAnswers++
             }
-            answerView(question.correctAnswer, R.drawable.correct_option_border)
 
-            if(mCurrentPosition == mQuestionsList!!.size) {
+            // Highlight all correct answers
+            question.correctAnswers.forEach { correctAnswer ->
+                val correctAnswerPosition = question.answers.indexOf(correctAnswer) + 1
+                answerView(correctAnswerPosition, R.drawable.correct_answer_border)
+            }
+
+            // Highlight wrong answers
+            mSelectedAnswers.forEach { selectedAnswer ->
+                if (!question.correctAnswers.contains(selectedAnswer)) {
+                    val wrongAnswerPosition = question.answers.indexOf(selectedAnswer) + 1
+                    answerView(wrongAnswerPosition, R.drawable.wrong_answer_border)
+                }
+            }
+
+            // Update the button text for the next action
+            if (mCurrentPosition == mQuestionsList!!.size) {
                 binding.btnSubmit.text = "FINISH"
+            } else {
+                binding.btnSubmit.text = "NEXT QUESTION"
             }
-            else {
-                binding.btnSubmit.text = "GO TO NEXT QUESTION"
+        } else {
+            // Move to the next question or finish the quiz
+            mSelectedAnswers.clear()
+            mCurrentPosition++
+            if (mCurrentPosition <= mQuestionsList!!.size) {
+                setQuestion()
+                binding.btnSubmit.text = "SUBMIT"
+            } else {
+                // Quiz finished, navigate to the result screen
+                val intent = Intent(this, ResultActivity::class.java)
+                intent.putExtra(Constants.CORRECT_ANSWERS, mCorrectAnswers)
+                intent.putExtra(Constants.TOTAL_QUESTIONS, mQuestionsList!!.size)
+                startActivity(intent)
+                finish()
             }
-            mSelectedOptionPosition = 0
         }
     }
 }

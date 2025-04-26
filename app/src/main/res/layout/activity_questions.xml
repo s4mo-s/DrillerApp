@@ -32,7 +32,7 @@
             android:orientation="horizontal">
 
             <ProgressBar
-                android:id="@+id/progressBar"
+                android:id="@+id/progress_bar"
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -54,11 +54,11 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/tv_option_one"
+            android:id="@+id/tv_answer_one"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:background="@drawable/default_option_border"
+            android:background="@drawable/default_answer_border"
             android:gravity="center"
             android:padding="15dp"
             android:textColor="#7A8089"
@@ -66,14 +66,14 @@
             tools:text="Apple" />
 
         <TextView
-            android:id="@+id/tv_option_two"
+            android:id="@+id/tv_answer_two"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="10dp"
-            android:background="@drawable/default_option_border"
+            android:background="@drawable/default_answer_border"
             android:gravity="center"
             android:padding="15dp"
             android:textColor="#7A8089"
@@ -81,14 +81,14 @@
             tools:text="Google" />
 
         <TextView
-            android:id="@+id/tv_option_three"
+            android:id="@+id/tv_answer_three"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="10dp"
-            android:background="@drawable/default_option_border"
+            android:background="@drawable/default_answer_border"
             android:gravity="center"
             android:padding="15dp"
             android:textColor="#7A8089"
@@ -96,19 +96,49 @@
             tools:text="Android Inc." />
 
         <TextView
-            android:id="@+id/tv_option_four"
+            android:id="@+id/tv_answer_four"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="10dp"
-            android:background="@drawable/default_option_border"
+            android:background="@drawable/default_answer_border"
             android:gravity="center"
             android:padding="15dp"
             android:textColor="#7A8089"
             android:textSize="18sp"
             tools:text="Nokia" />
+
+        <TextView
+            android:id="@+id/tv_answer_five"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/default_answer_border"
+            android:gravity="center"
+            android:padding="15dp"
+            android:textColor="#7A8089"
+            android:textSize="18sp"
+            tools:text="Samsung" />
+
+        <TextView
+            android:id="@+id/tv_answer_six"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/default_answer_border"
+            android:gravity="center"
+            android:padding="15dp"
+            android:textColor="#7A8089"
+            android:textSize="18sp"
+            tools:text="Xiaomi" />
 
         <Button
             android:id="@+id/btn_submit"
@@ -116,9 +146,9 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:background="@color/purple_500"
-            android:text="SUBMIT"
             android:textColor="@color/white"
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:text="SUBMIT" />
     </LinearLayout>
 </ScrollView>
