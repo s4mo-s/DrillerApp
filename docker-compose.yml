@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: drillerapp-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./init-database.js:/docker-entrypoint-initdb.d/init-database.js:ro
+    restart: always
