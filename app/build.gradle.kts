@@ -38,6 +38,11 @@ android {
         compose = true
         viewBinding = true
     }
+    packagingOptions {
+        resources {
+            excludes += "META-INF/native-image/**"
+        }
+    }
 }
 
 dependencies {
@@ -54,6 +59,13 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+//    implementation(libs.mongodb.driver.kotlin)
+    implementation("org.mongodb:mongodb-driver-sync:4.10.0") {
+        exclude(group = "org.mongodb", module = "bson-record-codec")
+        exclude(group = "org.mongodb", module = "gsasl")
+    }
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+    implementation("io.realm:realm-gradle-plugin:10.15.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -61,4 +73,13 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+}
+
+dependencies {
+    compileOnly("io.realm.kotlin:library-base:1.16.0")
+}
+// If using Device Sync
+dependencies {
+    compileOnly("io.realm.kotlin:library-sync:1.16.0")
 }

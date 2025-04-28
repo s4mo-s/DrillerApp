@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">DrillerApp</string>
+    <string name="quiz_name">Quiz name</string>
+    <string name="quiz_description">Quiz description</string>
+    <string name="randomize_prompt">Do you want to randomize the questions?</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+
 </resources>
