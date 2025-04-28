@@ -16,8 +16,8 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.widget.Button
-import android.widget.EditText
+import com.example.drillerapp.databinding.DialogRandomizeQuizBinding
+import com.example.drillerapp.databinding.DialogUploadQuizBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.json.JSONArray
 
@@ -58,20 +58,17 @@ class MainActivity : ComponentActivity() {
             if (quizJsonString != null) {
                 // Show BottomSheetDialog
                 val bottomSheetDialog = BottomSheetDialog(this)
-                val view = layoutInflater.inflate(R.layout.dialog_randomize_quiz, binding.root, false)
-                bottomSheetDialog.setContentView(view)
+                val dialogBinding = DialogRandomizeQuizBinding.inflate(layoutInflater) // Use ViewBinding for the dialog
+                bottomSheetDialog.setContentView(dialogBinding.root)
 
-                val btnYes = view.findViewById<Button>(R.id.btn_yes)
-                val btnNo = view.findViewById<Button>(R.id.btn_no)
-
-                btnYes.setOnClickListener {
+                dialogBinding.btnYes.setOnClickListener {
                     // Randomize quiz order
                     quizJsonString = randomizeQuizOrder(quizJsonString!!)
                     startQuiz()
                     bottomSheetDialog.dismiss()
                 }
 
-                btnNo.setOnClickListener {
+                dialogBinding.btnNo.setOnClickListener {
                     // Start quiz without randomizing
                     startQuiz()
                     bottomSheetDialog.dismiss()
@@ -100,17 +97,13 @@ class MainActivity : ComponentActivity() {
             }
 
             // Show a dialog to input quiz name and description
-            val dialogView = layoutInflater.inflate(R.layout.dialog_upload_quiz, binding.root, false)
+            val dialogBinding = DialogUploadQuizBinding.inflate(layoutInflater) // Use ViewBinding for the dialog
             val dialog = BottomSheetDialog(this)
-            dialog.setContentView(dialogView)
+            dialog.setContentView(dialogBinding.root)
 
-            val etQuizName = dialogView.findViewById<EditText>(R.id.et_quiz_name)
-            val etQuizDescription = dialogView.findViewById<EditText>(R.id.et_quiz_description)
-            val btnSubmit = dialogView.findViewById<Button>(R.id.btn_submit)
-
-            btnSubmit.setOnClickListener {
-                val quizName = etQuizName.text.toString().trim()
-                val quizDescription = etQuizDescription.text.toString().trim()
+            dialogBinding.btnSubmit.setOnClickListener {
+                val quizName = dialogBinding.etQuizName.text.toString().trim()
+                val quizDescription = dialogBinding.etQuizDescription.text.toString().trim()
 
                 if (quizName.isEmpty() || quizDescription.isEmpty()) {
                     Toast.makeText(this, "Please fill in all fields!", Toast.LENGTH_SHORT).show()
