@@ -80,6 +80,12 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+         // History Button
+        binding.btnHistory.setOnClickListener {
+            val intent = Intent(this, HistoryActivity::class.java)
+            startActivity(intent)
+        }
+
         // Load JSON Button
         binding.btnLoadJson.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
@@ -89,7 +95,7 @@ class MainActivity : ComponentActivity() {
             filePickerLauncher.launch(intent)
         }
 
-        // Upload Quizz Button
+        // Upload Quiz Button
         binding.btnUploadQuiz.setOnClickListener {
             if (quizJsonString == null) {
                 Toast.makeText(this, "Please load a quiz JSON file first!", Toast.LENGTH_SHORT).show()
@@ -229,9 +235,13 @@ class MainActivity : ComponentActivity() {
             jsonString // Return the original JSON if an error occurs
         }
     }
+    
     private fun startQuiz() {
+        val jsonObject = JSONObject(quizJsonString ?: "")
+        val quizName = jsonObject.optString("quizName", "Unknown Quiz")
+
         val intent = Intent(this, QuestionsActivity::class.java)
-        intent.putExtra("source", "json")
+        intent.putExtra("quizName", quizName)
         intent.putExtra("quizData", quizJsonString ?: "")
         startActivity(intent)
         finish()

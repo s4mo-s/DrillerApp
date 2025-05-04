@@ -34,3 +34,25 @@ db.quizzes.insertMany([
         ]
     }
 ]);
+
+db.results.insertOne(
+    {
+        quizName: "Science Quiz",
+        score: 1,
+        totalQuestions: 2,
+        quizJson: JSON.stringify({
+            questions: [
+                 {
+                     question: "What planet is known as the Red Planet?",
+                     answers: ["Earth", "Mars", "Jupiter", "Venus"],
+                     correctAnswers: ["Mars"]
+                 },
+                 {
+                     question: "What is the chemical symbol for water?",
+                     answers: ["H2O", "O2", "CO2", "NaCl"],
+                     correctAnswers: ["H2O"]
+                 }
+            ]
+        })
+    }
+);

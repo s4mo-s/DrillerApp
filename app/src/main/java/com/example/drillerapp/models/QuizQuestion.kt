@@ -1,6 +1,6 @@
-package com.example.drillerapp
+package com.example.drillerapp.models
 
-data class QuestionModel(
+data class QuizQuestion(
     val question: String,
     val answers: List<String>,
     val correctAnswers: List<String>

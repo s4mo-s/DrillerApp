@@ -3,6 +3,7 @@ package com.example.drillerapp
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -12,13 +13,20 @@ import androidx.core.graphics.toColorInt
 import com.example.drillerapp.databinding.ActivityQuestionsBinding
 import org.json.JSONObject
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
+import com.example.drillerapp.models.QuizQuestion
+import com.example.drillerapp.models.QuizResult
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var binding: ActivityQuestionsBinding
     private var mCurrentPosition: Int = 1
-    private var mQuestionsList: ArrayList<QuestionModel>? = null
+    private var mQuestionsList: ArrayList<QuizQuestion>? = null
     private var mSelectedAnswers: MutableList<String> = mutableListOf()
     private var mCorrectAnswers: Int = 0
+    private var quizName: String? = null
+    private var quizJsonString: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,22 +35,15 @@ class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
         binding = ActivityQuestionsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Determine the source of the quiz data
-        val source = intent.getStringExtra("source")
-        if (source == "json") {
-            val quizJsonString = intent.getStringExtra("quizData")
-            if (quizJsonString != null) {
-                mQuestionsList = parseQuestionsFromJson(quizJsonString)
-            } else {
-                Toast.makeText(this, "No quiz data found!", Toast.LENGTH_SHORT).show()
-                finish()
-            }
-        } else if (source == "db") {
-            mQuestionsList = loadQuestionsFromDatabase()
-            if (mQuestionsList.isNullOrEmpty()) {
-                Toast.makeText(this, "No quiz data found in the database!", Toast.LENGTH_SHORT).show()
-                finish()
-            }
+        // Retrieve quiz name and JSON from the Intent
+        quizName = intent.getStringExtra("quizName")
+        quizJsonString = intent.getStringExtra("quizData")
+
+        if (!quizJsonString.isNullOrEmpty()) {
+            mQuestionsList = parseQuestionsFromJson(quizJsonString!!)
+        } else {
+            Toast.makeText(this, "No quiz data found!", Toast.LENGTH_SHORT).show()
+            finish()
         }
 
         setQuestion()
@@ -58,8 +59,8 @@ class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
         binding.btnSubmit.setOnClickListener(this)
     }
 
-    private fun parseQuestionsFromJson(jsonString: String): ArrayList<QuestionModel> {
-        val questionsList = ArrayList<QuestionModel>()
+    private fun parseQuestionsFromJson(jsonString: String): ArrayList<QuizQuestion> {
+        val questionsList = ArrayList<QuizQuestion>()
         try {
             val jsonObject = JSONObject(jsonString)
             val questionsArray = jsonObject.getJSONArray("questions")
@@ -79,7 +80,7 @@ class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
                     correctAnswers.add(correctAnswersArray.getString(j))
                 }
 
-                val question = QuestionModel(
+                val question = QuizQuestion(
                     question = questionObject.getString("question"),
                     answers = answers,
                     correctAnswers = correctAnswers
@@ -89,13 +90,6 @@ class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
         } catch (e: Exception) {
             Toast.makeText(this, "Error parsing quiz data: ${e.message}", Toast.LENGTH_SHORT).show()
         }
-        return questionsList
-    }
-
-    private fun loadQuestionsFromDatabase(): ArrayList<QuestionModel> {
-        val questionsList = ArrayList<QuestionModel>()
-        // TODO: Implement database logic here
-        
         return questionsList
     }
 
@@ -250,13 +244,30 @@ class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
                 setQuestion()
                 binding.btnSubmit.text = "SUBMIT"
             } else {
-                // Quiz finished, navigate to the result screen
-                val intent = Intent(this, ResultActivity::class.java)
-                intent.putExtra(Constants.CORRECT_ANSWERS, mCorrectAnswers)
-                intent.putExtra(Constants.TOTAL_QUESTIONS, mQuestionsList!!.size)
-                startActivity(intent)
-                finish()
+                finishQuiz()
             }
         }
+    }
+
+    private fun finishQuiz() {
+        val quizResult = QuizResult(
+            quizName = quizName ?: "Unknown Quiz",
+            score = mCorrectAnswers,
+            totalQuestions = mQuestionsList!!.size,
+            quizJson = quizJsonString ?: ""
+        )
+
+        // Save the result to MongoDB
+        lifecycleScope.launch(Dispatchers.IO) {
+            val databaseHelper = DatabaseHelper()
+            databaseHelper.insertResult(quizResult)
+        }
+
+        // Navigate to the result screen or finish the activity
+        val intent = Intent(this, ResultActivity::class.java)
+        intent.putExtra(Constants.CORRECT_ANSWERS, mCorrectAnswers)
+        intent.putExtra(Constants.TOTAL_QUESTIONS, mQuestionsList!!.size)
+        startActivity(intent)
+        finish()
     }
 }

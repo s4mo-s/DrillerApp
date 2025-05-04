@@ -1,5 +1,6 @@
 package com.example.drillerapp.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -13,6 +14,7 @@ class QuizAdapter(private val onQuizSelected: (String) -> Unit) :
     private val quizzes = mutableListOf<String>()
     private var selectedPosition: Int = -1
 
+    @SuppressLint("NotifyDataSetChanged")
     fun submitList(newQuizzes: List<String>) {
         quizzes.clear()
         quizzes.addAll(newQuizzes)
@@ -27,7 +29,7 @@ class QuizAdapter(private val onQuizSelected: (String) -> Unit) :
     override fun onBindViewHolder(holder: QuizViewHolder, position: Int) {
         val quizJson = quizzes[holder.adapterPosition]
         val jsonObject = JSONObject(quizJson)
-        val quizName = jsonObject.optString("quizName", "Untitled Quiz")
+        val quizName = jsonObject.optString("quizName", "Unknown Quiz")
         val quizDescription = jsonObject.optString("description", "No description available")
 
         holder.bind(quizName, quizDescription, holder.adapterPosition == selectedPosition)
