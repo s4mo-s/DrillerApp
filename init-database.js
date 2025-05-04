@@ -35,7 +35,26 @@ db.quizzes.insertMany([
     }
 ]);
 
-db.results.insertOne(
+db.results.insertMany([
+    {
+        quizName: "General Knowledge Quiz",
+        score: 2,
+        totalQuestions: 2,
+        quizJson: JSON.stringify({
+            questions: [
+                {
+                    question: "What is the capital of France?",
+                    answers: ["Paris", "London", "Berlin", "Madrid"],
+                    correctAnswers: ["Paris"]
+                },
+                {
+                    question: "What is 2 + 2?",
+                    answers: ["3", "4", "5", "6"],
+                    correctAnswers: ["4"]
+                }
+            ]
+        })
+    },
     {
         quizName: "Science Quiz",
         score: 1,
@@ -55,4 +74,4 @@ db.results.insertOne(
             ]
         })
     }
-);
+]);
